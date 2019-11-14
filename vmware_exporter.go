@@ -87,12 +87,16 @@ func DefaultConfig() *Config {
 func NewExporter(config *Config) *Exporter {
 	ctx, _ := context.WithCancel(context.Background())
 
-	u, err := url.Parse(fmt.Sprintf("https://%s:%s@%s/sdk", config.Username, config.Password, config.Hostname))
-	if err != nil {
-		log.Fatal(err)
+	userinfo := url.UserPassword(config.Username, config.Password)
+
+	u := url.URL{
+		Scheme: "https",
+		Host:   config.Hostname,
+		Path:   "/sdk",
+		User:   userinfo,
 	}
 
-	client, err := govmomi.NewClient(ctx, u, true)
+	client, err := govmomi.NewClient(ctx, &u, true)
 	if err != nil {
 		log.Fatal(err)
 	}
